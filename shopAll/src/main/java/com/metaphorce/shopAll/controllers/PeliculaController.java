@@ -1,6 +1,7 @@
 package com.metaphorce.shopAll.controllers;
 
 import com.metaphorce.shopAll.entidades.Pelicula;
+import com.metaphorce.shopAll.excepciones.DatosNoValidosException;
 import com.metaphorce.shopAll.services.PeliculaService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,40 +29,34 @@ public class PeliculaController {
 
     @GetMapping("/{id}")
     public ResponseEntity<Pelicula> obtenerPeliculaPorId(@PathVariable Integer id) {
-        return peliculaService.obtenerPorId(id)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+
+        return ResponseEntity.ok(peliculaService.obtenerPorId(id));
     }
 
     @PostMapping
     // Devolverá lo que sea puede ser una lista de errores o con un objeto tipo pelicula
     public ResponseEntity<?> crearPelicula(@Valid @RequestBody Pelicula pelicula, BindingResult result) {
         if (result.hasErrors()) {
-            Map<String, String> errores = new HashMap<>(); // List <String> errores = new ArrayList<>();
-            // Recorremos la lista de los errores en result y lo pasamos por parametro
-            result.getFieldErrors().forEach(fieldError -> errores.put(fieldError.getField(), fieldError.getDefaultMessage()));
-            return ResponseEntity.badRequest().body(errores); // default '.body(null)' cambiamos a la lista
+            // Lanzamos datosNoValidosException
+            throw new DatosNoValidosException("Error de validacion", result);
         }
         return new ResponseEntity<>(peliculaService.guardar(pelicula), HttpStatus.CREATED);
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<Pelicula> actualizarPelicula(@PathVariable Integer id, @Valid @RequestBody Pelicula pelicula) {
-        return peliculaService.obtenerPorId(id)
-                .map(peliculaExistente -> {
-                    pelicula.setId(id);
-                    return ResponseEntity.ok(peliculaService.guardar(pelicula));
-                })
-                .orElse(ResponseEntity.notFound().build());
+        Pelicula peliculaVerificacion = peliculaService.obtenerPorId(id);
+        pelicula.setId(id);
+        peliculaService.guardar(pelicula);
+
+        return new ResponseEntity<>(peliculaService.guardar(pelicula), HttpStatus.CREATED);
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> eliminarPelicula(@PathVariable Integer id) {
-        return peliculaService.obtenerPorId(id)
-                .map(pelicula -> {
-                    peliculaService.eliminar(id);
-                    return ResponseEntity.noContent().<Void>build();
-                })
-                .orElse(ResponseEntity.notFound().build());
+        Pelicula peliculaVerificacion = peliculaService.obtenerPorId(id); // En este metodo de obtenerPorId se verifica que exista una pelicula con ese Id
+        // Procedemos a hacer la eliminacion, con el id, si no hubiera Pelicula con ese Id se detiene antes de llegar aqui
+        peliculaService.eliminar(id);
+        return ResponseEntity.noContent().build();
     }
 }

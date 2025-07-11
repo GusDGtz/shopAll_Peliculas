@@ -1,6 +1,7 @@
 package com.metaphorce.shopAll.services;
 
 import com.metaphorce.shopAll.entidades.Pelicula;
+import com.metaphorce.shopAll.excepciones.PeliculaNoEncontradaException;
 import com.metaphorce.shopAll.repositories.PeliculaRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -20,8 +21,8 @@ public class PeliculaServiceImpl implements PeliculaService {
     }
 
     @Override
-    public Optional<Pelicula> obtenerPorId(Integer id) {
-        return peliculaRepository.findById(id);
+    public Pelicula obtenerPorId(Integer id) {
+        return peliculaRepository.findById(id).orElseThrow(() -> new PeliculaNoEncontradaException("Pelicula no encontrada"));
     }
 
     @Override
