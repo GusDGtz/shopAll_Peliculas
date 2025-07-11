@@ -13,14 +13,14 @@ public class Pelicula {
     private Integer id;
     @NotEmpty(message = "La pelicula debe contener un nombre")
     @NotNull(message = "La pelicula no puede ser nula")
-    private String nombre;
+    private String nombre = null;
     @NotEmpty(message = "El director debe contener un nombre")
     @NotNull(message = "El director no puede ser nulo")
-    private String director;
+    private String director = null;
     private boolean disponible = true; // En caso de no agregarse se marcará disponible
     @Min(value = 40, message = "La pelicula debe durar mas de 40 minutos")
     @NotNull(message = "La duracion no puede ser nula")
-    private Long duracion;
+    private Long duracion = null;
 
     public Pelicula() {
     }
